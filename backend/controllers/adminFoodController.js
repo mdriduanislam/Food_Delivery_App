@@ -48,11 +48,22 @@ exports.updateFood = async (req, res) => {
       return res.status(404).json({ message: "Food item not found" });
     }
 
-    const updatedFood = await Food.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
+    // Update fields if provided
+    food.name = req.body.name || food.name;
+    food.description = req.body.description || food.description;
+    food.price = req.body.price || food.price;
+    food.category = req.body.category || food.category;
+    food.isAvailable =
+      req.body.isAvailable !== undefined
+        ? req.body.isAvailable
+        : food.isAvailable;
+
+    // If new image uploaded, replace image
+    if (req.file) {
+      food.image = `/uploads/foods/${req.file.filename}`;
+    }
+
+    const updatedFood = await food.save();
 
     res.status(200).json({
       message: "Food item updated successfully",
@@ -62,6 +73,7 @@ exports.updateFood = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 /**
  * @desc    Delete food item

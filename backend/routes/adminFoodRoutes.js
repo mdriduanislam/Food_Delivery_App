@@ -29,7 +29,7 @@ router.use(adminOnly);
 // Routes
 router.get("/foods", getAllFoodsAdmin);
 router.post("/foods",upload.single("image"), foodValidation, createFood);
-router.put("/foods/:id", updateFood);
+router.put("/foods/:id",upload.single("image"), updateFood);
 router.delete("/foods/:id", deleteFood);
 
 module.exports = router;
