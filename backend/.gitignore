@@ -12,3 +12,6 @@ credentials.txt
 secrets/
 config/
 .env/
+node_modules/
+backend/node_modules/
+.env
