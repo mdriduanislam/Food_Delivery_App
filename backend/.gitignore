@@ -1,0 +1,14 @@
+.env
+.env.local
+.env.production
+config.json
+secrets.json
+credentials.txt
+*.pem
+*.key
+*.crt
+*.sqlite
+*.db
+secrets/
+config/
+.env/
