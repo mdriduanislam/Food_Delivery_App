@@ -25,11 +25,31 @@ exports.getAllOrders = async (req, res) => {
 exports.updateOrderStatus = async (req, res) => {
   const { orderStatus } = req.body;
 
+  const allowedStatuses = [
+    "placed",
+    "confirmed",
+    "preparing",
+    "out_for_delivery",
+    "delivered",
+    "cancelled",
+  ];
+
+  if (!allowedStatuses.includes(orderStatus)) {
+    return res.status(400).json({ message: "Invalid order status" });
+  }
+
   try {
     const order = await Order.findById(req.params.id);
 
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
+    }
+
+    // Prevent delivery before payment
+    if (order.paymentStatus !== "paid" && orderStatus !== "cancelled") {
+      return res
+        .status(400)
+        .json({ message: "Order is not paid yet" });
     }
 
     order.orderStatus = orderStatus;
@@ -43,3 +63,4 @@ exports.updateOrderStatus = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+

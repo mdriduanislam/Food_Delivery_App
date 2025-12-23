@@ -7,7 +7,7 @@ const Cart = require("../models/Cart");
  * @access  User
  */
 exports.placeOrder = async (req, res) => {
-  const { deliveryAddress, paymentMethod } = req.body;
+  const { deliveryAddress, paymentMethod, paymentIntentId } = req.body;
 
   try {
     const cart = await Cart.findOne({ user: req.user.id }).populate("items.food");
@@ -24,21 +24,25 @@ exports.placeOrder = async (req, res) => {
       image: item.food.image,
     }));
 
-    const totalAmount = orderItems.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0
-    );
+    const totalAmount = Math.round(
+      orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0) * 100
+    ) / 100;
 
     const order = await Order.create({
       user: req.user.id,
       items: orderItems,
       totalAmount,
       paymentMethod,
+      paymentStatus: paymentMethod === "CARD" ? "pending" : "paid",
+      stripePaymentIntentId: paymentIntentId || null,
       deliveryAddress,
+      orderStatus: "placed",
     });
 
-    // Clear cart after order placed
-    await Cart.findOneAndDelete({ user: req.user.id });
+    // Clear cart only for COD
+    if (paymentMethod === "COD") {
+      await Cart.findOneAndDelete({ user: req.user.id });
+    }
 
     res.status(201).json({
       message: "Order placed successfully",
@@ -48,6 +52,7 @@ exports.placeOrder = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 /**
  * @desc    Get logged-in user's orders

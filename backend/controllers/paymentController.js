@@ -1,5 +1,5 @@
 const stripe = require("../config/stripe");
-const Order = require("../models/orderModel");
+const Order = require("../models/Order");
 
 exports.createPaymentIntent = async (req, res) => {
   try {
@@ -15,12 +15,12 @@ exports.createPaymentIntent = async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    if (order.isPaid) {
+    if (order.paymentStatus === "paid") {
       return res.status(400).json({ message: "Order already paid" });
     }
 
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(order.totalPrice * 100), // USD cents
+      amount: Math.round(order.totalAmount * 100), // USD cents
       currency: "usd",
       metadata: {
         orderId: order._id.toString(),
