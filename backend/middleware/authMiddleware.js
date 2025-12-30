@@ -4,8 +4,10 @@ const User = require("../models/User");
 const protect = async (req, res, next) => {
     try {
         let token;
-
-        if (
+        if (req.cookies && req.cookies.token) {
+            token = req.cookies.token;
+        }
+        else if (
             req.headers.authorization &&
             req.headers.authorization.startsWith("Bearer")
         ) {
@@ -33,7 +35,7 @@ const protect = async (req, res, next) => {
 
 const adminOnly = (req, res, next) => {
     if (req.user && req.user.role === "admin") {
-        next();
+        return next();
     } else {
         res.status(403).json({ message: "Admin access only" });
     }
